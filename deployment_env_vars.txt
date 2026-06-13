@@ -1,0 +1,79 @@
+========================================================================
+             RentMyVehicle - Deployment Environment Variables Guide
+========================================================================
+
+This file details all the environment variables required when deploying 
+the frontend to Vercel and the backend to Render.
+
+------------------------------------------------------------------------
+1. FRONTEND DEPLOYMENT (Vercel)
+------------------------------------------------------------------------
+Deploy the 'frontend' directory to Vercel. You will need to add the following 
+environment variable in the Vercel dashboard project settings:
+
+* VITE_API_BASE_URL
+  - Description: The complete URL of the deployed backend API.
+  - Example:     https://rent-my-vehicle-backend.onrender.com
+  - Note:        Vite requires environment variables to be prefixed with 
+                 "VITE_" to make them available in client-side code.
+
+------------------------------------------------------------------------
+2. BACKEND DEPLOYMENT (Render)
+------------------------------------------------------------------------
+Deploy the 'backend' directory to Render as a Web Service. You will need 
+to configure the following environment variables in the Render dashboard:
+
+Database Config:
+* SPRING_DATASOURCE_URL
+  - Description: The JDBC connection string for your production database.
+  - Example:     jdbc:mysql://mysql-host:3306/defaultdb?useSSL=true&requireSSL=true
+* SPRING_DATASOURCE_USERNAME
+  - Description: The database username.
+  - Example:     avnadmin
+* SPRING_DATASOURCE_PASSWORD
+  - Description: The database password.
+
+Security Config:
+* JWT_SECRET
+  - Description: A secure, random string (at least 256 bits/32 bytes) used 
+                 to sign JWT tokens.
+  - Example:     YourLongSuperSecretKeyAtLeast32BytesForHmacSha256
+* JWT_EXPIRATION
+  - Description: Token expiration time in milliseconds.
+  - Default:     86400000 (24 hours)
+
+CORS / Security:
+* APP_CORS_ALLOWED_ORIGINS
+  - Description: Comma-separated list of origins permitted to call the backend.
+                 Should include your Vercel frontend URL.
+  - Example:     https://rent-my-vehicle.vercel.app,http://localhost:5173
+
+Google Cloud Storage (GCS) File Uploads Config:
+* GCS_BUCKET_NAME
+  - Description: Name of your Google Cloud Storage bucket.
+  - Example:     rent-my-vehicle-assets
+* GOOGLE_CREDENTIALS_JSON
+  - Description: The RAW JSON string contents of your Google Cloud Service 
+                 Account credentials key file. Copy and paste the entire JSON 
+                 object here.
+  - Note:        This avoids needing to commit or mount a physical key file 
+                 in production.
+
+Spring Mail (SMTP) Config:
+* SPRING_MAIL_HOST
+  - Description: SMTP server address.
+  - Default:     smtp.gmail.com
+* SPRING_MAIL_PORT
+  - Description: SMTP server port.
+  - Default:     587
+* SPRING_MAIL_USERNAME
+  - Description: The sender email address.
+  - Example:     your-email@gmail.com
+* SPRING_MAIL_PASSWORD
+  - Description: Email app password (not your main password if using Gmail 2FA).
+
+Razorpay Payments Config (Optional):
+* RAZORPAY_KEY_ID
+  - Description: Razorpay API Key. If omitted, mock checkout is active.
+* RAZORPAY_KEY_SECRET
+  - Description: Razorpay Secret. If omitted, mock checkout is active.
