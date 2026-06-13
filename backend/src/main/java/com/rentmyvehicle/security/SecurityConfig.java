@@ -26,7 +26,7 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Value("#{'${app.cors.allowed-origins}'.split(',')}")
+    @Value("${app.cors.allowed-origins:*}")
     private List<String> allowedOrigins;
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
