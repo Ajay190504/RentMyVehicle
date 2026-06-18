@@ -83,6 +83,18 @@ export default function VehicleForm() {
     setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
   };
 
+  const handleDeleteImage = async (imageId) => {
+    if (!window.confirm('Are you sure you want to delete this image?')) return;
+    try {
+      const response = await apiClient.delete(`/api/vehicles/images/${imageId}`);
+      if (response.data.success) {
+        setExistingImages(existingImages.filter((img) => img.id !== imageId));
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete image');
+    }
+  };
+
   const onSubmit = async (data) => {
     setError('');
     setLoading(true);
@@ -346,6 +358,14 @@ export default function VehicleForm() {
                       Primary
                     </span>
                   )}
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(img.id)}
+                    className="absolute top-1 right-1 p-1 bg-brand-black/75 hover:bg-red-600 text-white rounded-full transition duration-150 shadow-sm"
+                    title="Delete Image"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
             </div>

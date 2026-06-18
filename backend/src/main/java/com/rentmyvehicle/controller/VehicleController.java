@@ -94,4 +94,13 @@ public class VehicleController {
         VehicleImageDto image = vehicleService.uploadVehicleImage(id, file, userDetails.getUsername());
         return ResponseEntity.ok(ApiResponse.success("Image uploaded successfully", image));
     }
+
+    @DeleteMapping("/images/{imageId}")
+    @PreAuthorize("hasRole('OWNER')")
+    public ResponseEntity<ApiResponse<Void>> deleteVehicleImage(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+        vehicleService.deleteVehicleImage(imageId, userDetails.getUsername());
+        return ResponseEntity.ok(ApiResponse.success("Image deleted successfully"));
+    }
 }

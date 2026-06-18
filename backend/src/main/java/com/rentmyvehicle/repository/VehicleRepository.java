@@ -12,13 +12,16 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Repository
 public interface VehicleRepository extends JpaRepository<Vehicle, Long> {
     Page<Vehicle> findByStatus(VehicleStatus status, Pageable pageable);
     Page<Vehicle> findByOwner(User owner, Pageable pageable);
+    Page<Vehicle> findByOwnerAndStatusNot(User owner, VehicleStatus status, Pageable pageable);
     
     long countByOwnerAndStatusNot(User owner, VehicleStatus status);
+    long countByOwnerAndStatusNotIn(User owner, List<VehicleStatus> statuses);
 
     @Query("SELECT v FROM Vehicle v WHERE v.status = 'ACTIVE' " +
            "AND (:category IS NULL OR v.category = :category) " +

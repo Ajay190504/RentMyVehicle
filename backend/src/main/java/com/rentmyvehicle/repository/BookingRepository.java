@@ -32,4 +32,6 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     );
 
     List<Booking> findByVehicleAndStatusIn(Vehicle vehicle, List<BookingStatus> statuses);
+
+    boolean existsByVehicle(Vehicle vehicle);
 }

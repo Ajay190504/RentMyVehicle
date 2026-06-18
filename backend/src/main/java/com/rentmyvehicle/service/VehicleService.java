@@ -60,7 +60,7 @@ public class VehicleService {
                 .orElseThrow(() -> new BadRequestException("An active subscription is required to create a vehicle listing."));
 
         if (activeSub.getPlan().getMaxVehicleListings() != -1) {
-            long activeCount = vehicleRepository.countByOwnerAndStatusNot(owner, VehicleStatus.REJECTED);
+            long activeCount = vehicleRepository.countByOwnerAndStatusNotIn(owner, List.of(VehicleStatus.REJECTED, VehicleStatus.DELETED));
             if (activeCount >= activeSub.getPlan().getMaxVehicleListings()) {
                 throw new BadRequestException("Listing quota exceeded for your current plan (" 
                         + activeSub.getPlan().getMaxVehicleListings() + " listings max). Please upgrade.");
@@ -144,7 +144,12 @@ public class VehicleService {
             throw new BadRequestException("You are not authorized to delete this vehicle listing");
         }
 
-        vehicleRepository.delete(vehicle);
+        if (bookingRepository.existsByVehicle(vehicle)) {
+            vehicle.setStatus(VehicleStatus.DELETED);
+            vehicleRepository.save(vehicle);
+        } else {
+            vehicleRepository.delete(vehicle);
+        }
     }
 
     public VehicleDto getVehicleById(Long id) {
@@ -177,7 +182,7 @@ public class VehicleService {
     public Page<VehicleDto> getOwnerVehicles(String email, Pageable pageable) {
         User owner = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        Page<Vehicle> vehicles = vehicleRepository.findByOwner(owner, pageable);
+        Page<Vehicle> vehicles = vehicleRepository.findByOwnerAndStatusNot(owner, VehicleStatus.DELETED, pageable);
         return vehicles.map(vehicleMapper::toDto);
     }
 
@@ -220,6 +225,28 @@ public class VehicleService {
 
         VehicleImage saved = imageRepository.save(img);
         return vehicleMapper.toImageDto(saved);
+    }
+
+    @Transactional
+    public void deleteVehicleImage(Long imageId, String email) {
+        VehicleImage image = imageRepository.findById(imageId)
+                .orElseThrow(() -> new ResourceNotFoundException("Image not found"));
+
+        Vehicle vehicle = image.getVehicle();
+        if (!vehicle.getOwner().getEmail().equals(email)) {
+            throw new BadRequestException("You are not authorized to delete this image");
+        }
+
+        boolean wasPrimary = image.getIsPrimary() != null && image.getIsPrimary();
+
+        vehicle.getImages().remove(image);
+        imageRepository.delete(image);
+
+        if (wasPrimary && !vehicle.getImages().isEmpty()) {
+            VehicleImage newPrimary = vehicle.getImages().get(0);
+            newPrimary.setIsPrimary(true);
+            imageRepository.save(newPrimary);
+        }
     }
 
     private void validateRates(BigDecimal hourly, BigDecimal daily, BigDecimal monthly) {
